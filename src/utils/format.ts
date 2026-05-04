@@ -1,9 +1,10 @@
-export function formatCurrency(amount: number) {
+export function formatCurrency(amount: number, digits = 0) {
   const safe = Number.isFinite(amount) ? amount : 0
   return new Intl.NumberFormat('de-DE', {
     style: 'currency',
     currency: 'EUR',
-    maximumFractionDigits: 0
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits
   }).format(safe)
 }
 

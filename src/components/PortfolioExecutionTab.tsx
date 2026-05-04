@@ -333,7 +333,7 @@ export default function PortfolioExecutionTab({
                     return (
                       <div key={w.ticker} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
                         <span style={{ fontWeight: 600 }}>{w.ticker}</span>
-                        <span>{formatPercent(w.targetWeightPercent)} &rarr; <b>{formatCurrency(amount, 2)}</b></span>
+                        <span>{formatPercent(w.targetWeightPercent)} &rarr; <b>{formatCurrency(amount, 0)}</b></span>
                       </div>
                     );
                   })}
