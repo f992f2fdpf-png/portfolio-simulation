@@ -111,6 +111,7 @@ export default function App() {
   const [portfolioName, setPortfolioName] = useState('Mein Portfolio')
   const [status, setStatus] = useState<string | null>(null)
   const [dataStatus, setDataStatus] = useState<string | null>(null)
+  const [failedTickers, setFailedTickers] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState<'simulation' | 'quant' | 'analytics' | 'stresstest' | 'execution'>('simulation')
 
   useEffect(() => {
@@ -182,6 +183,11 @@ export default function App() {
             updated = true
           } catch (e) {
             console.error('Failed fetching', t, e)
+            setFailedTickers(prev => {
+              const next = new Set(prev)
+              next.add(t)
+              return next
+            })
           }
         }
         if (active && updated) {
@@ -689,6 +695,7 @@ export default function App() {
             onCustomExpectedReturnChange={onCustomExpectedReturnChange}
             onCustomVolatilityChange={onCustomVolatilityChange}
             onResetCustom={resetCustomParams}
+            failedTickers={failedTickers}
           />
 
           <div className="sectionSpacer" />

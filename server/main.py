@@ -96,8 +96,40 @@ def get_historical_data():
         })
 
     except Exception as e:
-        print(f"Historical API error: {e}")
-        return jsonify({"error": str(e)}), 500
+        print(f"yfinance failed for {symbol}, trying direct CSV download fallback...")
+        try:
+            # Fallback: Try direct download link (often works when JSON API is blocked)
+            # 10 years back
+            end_ts = int(datetime.now().timestamp())
+            start_ts = end_ts - (10 * 365 * 24 * 60 * 60)
+            
+            csv_url = f"https://query1.finance.yahoo.com/v7/finance/download/{symbol}?period1={start_ts}&period2={end_ts}&interval=1mo&events=history&includeAdjustedClose=true"
+            res = session.get(csv_url, timeout=10)
+            res.raise_for_status()
+            
+            from io import StringIO
+            df = pd.read_csv(StringIO(res.text))
+            if df.empty:
+                raise ValueError("CSV data is empty")
+            
+            # Use 'Adj Close' if available, otherwise 'Close'
+            price_col = 'Adj Close' if 'Adj Close' in df.columns else 'Close'
+            series = []
+            for _, row in df.iterrows():
+                if pd.notna(row[price_col]):
+                    series.append({
+                        "time": str(row["Date"]),
+                        "value": float(row[price_col])
+                    })
+            
+            return jsonify({
+                "ticker": symbol,
+                "series": series,
+                "source": "csv_fallback"
+            })
+        except Exception as fallback_e:
+            print(f"Fallback also failed for {symbol}: {fallback_e}")
+            return jsonify({"error": f"Yahoo Finance blockiert den Zugriff. Bitte gib die Rendite manuell in den Einstellungen ein. (Details: {str(e)})"}), 500
 
 
 @app.route("/api/options", methods=["GET"])

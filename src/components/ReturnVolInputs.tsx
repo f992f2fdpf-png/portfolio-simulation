@@ -11,6 +11,7 @@ export type ReturnVolInputsProps = {
   onCustomExpectedReturnChange: (ticker: StockTicker, value: number | null) => void
   onCustomVolatilityChange: (ticker: StockTicker, value: number | null) => void
   onResetCustom: () => void
+  failedTickers?: Set<string>
 }
 
 export default function ReturnVolInputs({
@@ -22,7 +23,8 @@ export default function ReturnVolInputs({
   customVolatilities,
   onCustomExpectedReturnChange,
   onCustomVolatilityChange,
-  onResetCustom
+  onResetCustom,
+  failedTickers = new Set()
 }: ReturnVolInputsProps) {
   if (tickers.length === 0) return null
 
@@ -48,13 +50,25 @@ export default function ReturnVolInputs({
           const baseR = Number.isFinite(baseExpectedReturns[t]) ? baseExpectedReturns[t] * 100 : NaN
           const baseV = Number.isFinite(baseVolatilities[t]) ? baseVolatilities[t] * 100 : NaN
           const customR = Number.isFinite(customExpectedReturns[t]) ? customExpectedReturns[t] * 100 : NaN
-          const customV = Number.isFinite(customVolatilities[t]) ? customVolatilities[t] * 100 : NaN
+          const customV = Number.isFinite(customVolatilities[t]) ? customV : baseV
           const displayR = Number.isFinite(customR) ? customR : baseR
           const displayV = Number.isFinite(customV) ? customV : baseV
+          
+          const hasFailed = failedTickers.has(t)
 
           return (
-            <div key={t} className="returnVolRow">
-              <span>{info.name}</span>
+            <div key={t} className="returnVolRow" style={{ position: 'relative' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {info.name}
+                {hasFailed && (
+                  <span 
+                    title="Yahoo Finance blockiert den Zugriff auf historische Daten für dieses Asset auf Render. Bitte gib die Werte manuell ein."
+                    style={{ cursor: 'help', color: 'var(--danger, #ef4444)' }}
+                  >
+                    ⚠️
+                  </span>
+                )}
+              </span>
               <input
                 type="number"
                 className="textInput"
@@ -63,7 +77,8 @@ export default function ReturnVolInputs({
                   const value = parseFloat(e.target.value)
                   onCustomExpectedReturnChange(t, Number.isFinite(value) ? value / 100 : null)
                 }}
-                placeholder={Number.isFinite(baseR) ? baseR.toFixed(2) : ''}
+                placeholder={Number.isFinite(baseR) ? baseR.toFixed(2) : (hasFailed ? '0.00' : '')}
+                style={{ borderColor: hasFailed && !Number.isFinite(customR) ? 'var(--danger, #ef4444)' : undefined }}
               />
               <input
                 type="number"
@@ -73,13 +88,19 @@ export default function ReturnVolInputs({
                   const value = parseFloat(e.target.value)
                   onCustomVolatilityChange(t, Number.isFinite(value) ? value / 100 : null)
                 }}
-                placeholder={Number.isFinite(baseV) ? baseV.toFixed(2) : ''}
+                placeholder={Number.isFinite(baseV) ? baseV.toFixed(2) : (hasFailed ? '0.00' : '')}
+                style={{ borderColor: hasFailed && !Number.isFinite(customV) ? 'var(--danger, #ef4444)' : undefined }}
               />
             </div>
           )
         })}
       </div>
       <div className="tableHint" style={{ marginTop: 8 }}>
+        {failedTickers.size > 0 && (
+          <div style={{ color: 'var(--danger, #ef4444)', marginBottom: '8px', fontWeight: 600 }}>
+            ⚠️ Hinweis: Einige Daten konnten nicht geladen werden (Yahoo Blockade). Bitte manuelle Werte eingeben.
+          </div>
+        )}
         Aktuelle Werte: Rendite = manuell angegebener Wert (falls vorhanden) oder historischer Datasetwert.
       </div>
     </div>
