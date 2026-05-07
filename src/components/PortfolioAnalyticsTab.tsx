@@ -62,7 +62,7 @@ export default function PortfolioAnalyticsTab({ selectedTickers, weights, datase
   // Correlation Matrix
   const correlationData = useMemo(() => {
     if (selectedTickers.length === 0 || !datasetSeries) return null;
-
+    
     // Filter datasetSeries to only include selected tickers
     const filteredSeries: Record<string, any[]> = {};
     for (const t of selectedTickers) {
@@ -70,12 +70,12 @@ export default function PortfolioAnalyticsTab({ selectedTickers, weights, datase
     }
 
     const matrix = calculateCorrelationMatrix(filteredSeries);
-
+    
     // Convert to Plotly heatmap format (Z matrix)
     const z: number[][] = [];
     const text: string[][] = [];
     const labels = selectedTickers;
-
+    
     for (const y of labels) {
       const row: number[] = [];
       const textRow: string[] = [];

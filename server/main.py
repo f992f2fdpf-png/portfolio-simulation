@@ -11,17 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
-
-# Create a session with a browser-like User-Agent to help bypass Yahoo Finance blocks on cloud IPs
-session = requests.Session()
-session.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Origin": "https://finance.yahoo.com",
-    "Referer": "https://finance.yahoo.com/"
-})
+CORS(app)  # Allow CORS for local dev
 
 @app.route("/api/search", methods=["GET"])
 def search():
@@ -67,8 +57,7 @@ def get_historical_data():
     # We grab 10y and monthly interval. Sometimes latest date is needed too.
     try:
         print(f"Fetching data for {symbol}...")
-        print(f"Fetching data for {symbol}...")
-        ticker = yf.Ticker(symbol, session=session)
+        ticker = yf.Ticker(symbol)
         
         # We need historical prices to compute returns (Adj Close)
         hist = ticker.history(period="max", interval="1mo")
@@ -118,7 +107,7 @@ def get_options_data():
         return jsonify({"error": "Symbol is required"}), 400
         
     try:
-        ticker = yf.Ticker(symbol, session=session)
+        ticker = yf.Ticker(symbol)
         expirations = ticker.options
         if not expirations:
             return jsonify({"error": "No options available for this ticker"}), 404
@@ -244,7 +233,7 @@ def get_historical_daily():
         return jsonify({"error": "Symbol is required"}), 400
     try:
         print(f"Fetching daily data for {symbol} {start} - {end}...")
-        ticker = yf.Ticker(symbol, session=session)
+        ticker = yf.Ticker(symbol)
         hist = ticker.history(start=start, end=end, interval="1d")
         if hist.empty:
             return jsonify({"error": f"No data for {symbol}"}), 404
