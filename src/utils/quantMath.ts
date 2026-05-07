@@ -384,7 +384,7 @@ export function calculateDrawdowns(equityCurve: EquityPoint[]): { drawdowns: Equ
   return { drawdowns, maxDrawdown: maxDrawdown * 100 };
 }
 
-export function calculateRiskKPIs(equityCurve: EquityPoint[], riskFreeRate: number = 0.02) {
+export function calculateRiskKPIs(equityCurve: EquityPoint[], riskFreeRate: number = 0) {
   if (equityCurve.length < 2) return { sharpe: 0, sortino: 0, annVol: 0, annReturn: 0 };
 
   const logReturns: number[] = [];

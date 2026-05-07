@@ -31,6 +31,8 @@ type SavedPortfolio = {
   endCapital?: number
   totalGain?: number
   percentReturn?: number
+  expectedReturns?: Record<StockTicker, number>
+  volatilities?: Record<StockTicker, number>
 }
 
 const STORAGE_KEYS = {
@@ -347,7 +349,7 @@ export default function App() {
         years: p.years,
         weights: weightsSafe,
         tickers: p.selectedTickers,
-        expectedReturns: effectiveExpectedReturns
+        expectedReturns: p.expectedReturns || effectiveExpectedReturns
       })
 
       return {
@@ -540,7 +542,9 @@ export default function App() {
       years,
       endCapital: snapshotTotals?.endCapital,
       totalGain: snapshotTotals?.totalGain,
-      percentReturn: snapshotTotals?.percentReturn
+      percentReturn: snapshotTotals?.percentReturn,
+      expectedReturns: { ...effectiveExpectedReturns },
+      volatilities: { ...effectiveVolatilities }
     }
     setSavedPortfolios((prev) => [entry, ...prev].slice(0, 20))
     setStatus('Portfolio gespeichert.')
